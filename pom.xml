@@ -48,6 +48,12 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <xdev.xapi.version>6.0.1</xdev.xapi.version>
+        <!-- We call it db2i here but it's actually jt400
+         For more information: https://www.ibm.com/support/pages/jtopen-jdbc-driver-%E2%80%93-alternate-server-support
+         -->
+        <db2i.version>8.5</db2i.version>
     </properties>
 
     <repositories>
@@ -87,7 +93,26 @@
     </distributionManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>com.xdev-software</groupId>
+            <artifactId>xapi</artifactId>
+            <version>${xdev.xapi.version}</version>
+        </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/net.sf.jt400/jt400 -->
+        <dependency>
+            <groupId>net.sf.jt400</groupId>
+            <artifactId>jt400</artifactId>
+            <version>${db2i.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
