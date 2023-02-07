@@ -17,43 +17,6 @@
  */
 package xdev.db.db2i.jdbc;
 
-/*-
- * #%L
- * DB2i
- * %%
- * Copyright (C) 2003 - 2023 XDEV Software
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- */
-
-import com.xdev.jadoth.sqlengine.interfaces.ConnectionProvider;
-import xdev.db.ColumnMetaData;
-import xdev.db.DBException;
-import xdev.db.DataType;
-import xdev.db.Index;
-import xdev.db.Result;
-import xdev.db.StoredProcedure;
-import xdev.db.jdbc.JDBCConnection;
-import xdev.db.jdbc.JDBCDataSource;
-import xdev.db.jdbc.JDBCMetaData;
-import xdev.db.sql.Functions;
-import xdev.db.sql.SELECT;
-import xdev.db.sql.Table;
-import xdev.util.ProgressMonitor;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -67,6 +30,22 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.xdev.jadoth.sqlengine.interfaces.ConnectionProvider;
+
+import xdev.db.ColumnMetaData;
+import xdev.db.DBException;
+import xdev.db.DataType;
+import xdev.db.Index;
+import xdev.db.Result;
+import xdev.db.StoredProcedure;
+import xdev.db.jdbc.JDBCConnection;
+import xdev.db.jdbc.JDBCDataSource;
+import xdev.db.jdbc.JDBCMetaData;
+import xdev.db.sql.Functions;
+import xdev.db.sql.SELECT;
+import xdev.db.sql.Table;
+import xdev.util.ProgressMonitor;
 
 
 
@@ -83,37 +62,34 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 	 */
 	public static Object		DDS_VIEW			= "DDS_View";
 	
-	
-	public DB2iJDBCMetaData(DB2iJDBCDataSource dataSource) throws DBException
+	public DB2iJDBCMetaData(final DB2iJDBCDataSource dataSource) throws DBException
 	{
 		super(dataSource);
 	}
 	
-	
 	@Override
-	protected String getCatalog(JDBCDataSource dataSource)
+	protected String getCatalog(final JDBCDataSource dataSource)
 	{
 		return null;
 	}
 	
-	
 	@Override
-	public TableInfo[] getTableInfos(ProgressMonitor monitor, EnumSet<TableType> types)
-			throws DBException
+	public TableInfo[] getTableInfos(final ProgressMonitor monitor, final EnumSet<TableType> types)
+		throws DBException
 	{
-		monitor.beginTask("",ProgressMonitor.UNKNOWN);
+		monitor.beginTask("", ProgressMonitor.UNKNOWN);
 		
-		List<TableInfo> list = new ArrayList();
+		final List<TableInfo> list = new ArrayList();
 		
-		JDBCConnection jdbcConnection = (JDBCConnection)dataSource.openConnection();
+		final JDBCConnection jdbcConnection = (JDBCConnection)this.dataSource.openConnection();
 		
 		try
 		{
-			String schema = getSchema(dataSource);
+			final String schema = this.getSchema(this.dataSource);
 			
-			String tableTypeStatement = getTableTypeStatement(types);
+			final String tableTypeStatement = this.getTableTypeStatement(types);
 			
-			String sql;
+			final String sql;
 			if(schema != null && schema.length() > 0)
 			{
 				
@@ -126,13 +102,13 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 						+ " AND " + tableTypeStatement + " FOR READ ONLY";
 			}
 			
-			Result rs = jdbcConnection.query(sql);
+			final Result rs = jdbcConnection.query(sql);
 			
 			while(rs.next() && !monitor.isCanceled())
 			{
-				String type = rs.getString("TABLE_TYPE");
+				final String type = rs.getString("TABLE_TYPE");
 				
-				TableType tableType;
+				final TableType tableType;
 				
 				// SQL-Tables
 				if(type.equalsIgnoreCase("T"))
@@ -161,8 +137,8 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 				
 				if(types.contains(tableType))
 				{
-					TableInfo tInfo = new TableInfo(tableType,rs.getString("TABLE_SCHEMA"),
-							rs.getString("TABLE_NAME"));
+					final TableInfo tInfo = new TableInfo(tableType, rs.getString("TABLE_SCHEMA"),
+						rs.getString("TABLE_NAME"));
 					
 					// DDS-Tables
 					if(type.equalsIgnoreCase("P"))
@@ -183,7 +159,7 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 			rs.close();
 			
 		}
-		catch(DBException ex)
+		catch(final DBException ex)
 		{
 			throw ex;
 		}
@@ -194,13 +170,12 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 		
 		monitor.done();
 		
-		TableInfo[] tables = list.toArray(new TableInfo[list.size()]);
+		final TableInfo[] tables = list.toArray(new TableInfo[list.size()]);
 		Arrays.sort(tables);
 		return tables;
 	}
 	
-	
-	private String getTableTypeStatement(EnumSet<TableType> types)
+	private String getTableTypeStatement(final EnumSet<TableType> types)
 	{
 		
 		if(types == null || types.isEmpty())
@@ -232,50 +207,50 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 	
 	@Override
 	protected TableMetaData getTableMetaData(
-		JDBCConnection jdbcConnection,
-		DatabaseMetaData meta,
-		int flags,
-		TableInfo table
+		final JDBCConnection jdbcConnection,
+		final DatabaseMetaData meta,
+		final int flags,
+		final TableInfo table
 	) throws DBException, SQLException
 	{
-		String catalog = getCatalog(dataSource);
-		String schema = table.getSchema();
+		final String catalog = this.getCatalog(this.dataSource);
+		final String schema = table.getSchema();
 		
-		String tableName = table.getName();
-		Table tableIdentity = new Table(schema,tableName,null);
+		final String tableName = table.getName();
+		final Table tableIdentity = new Table(schema, tableName, null);
 		
-		Map<String, Object> defaultValues = new HashMap<>();
-		Map<String, Boolean> autoIncrements = new HashMap<>();
+		final Map<String, Object> defaultValues = new HashMap<>();
+		final Map<String, Boolean> autoIncrements = new HashMap<>();
 		
-		ResultSet rs = meta.getColumns(catalog,schema,tableName,null);
+		ResultSet rs = meta.getColumns(catalog, schema, tableName, null);
 		fillDefaultValuesAndAutoIncrements(defaultValues, autoIncrements, rs);
 		
-		Map<String, ColumnMetaData> columnMap = new HashMap<>();
+		final Map<String, ColumnMetaData> columnMap = new HashMap<>();
 		
-		SELECT select = new SELECT().FROM(tableIdentity).WHERE("1 = 0");
+		final SELECT select = new SELECT().FROM(tableIdentity).WHERE("1 = 0");
 		
 		Result result = jdbcConnection.query(select);
 		int cc = result.getColumnCount();
-		ColumnMetaData[] columns = new ColumnMetaData[cc];
-		initColumns(tableName, defaultValues, autoIncrements, columnMap, result, cc, columns);
+		final ColumnMetaData[] columns = new ColumnMetaData[cc];
+		this.initColumns(tableName, defaultValues, autoIncrements, columnMap, result, cc, columns);
 		
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		buildContentOfStringBuilder(defaultValues, columnMap, sb);
 		
 		if(sb.length() > 0)
 		{
 			try
 			{
-				String defaultValueQuery = "SELECT " + sb.toString()
-						+ " FROM SYSIBM.TABLES FETCH FIRST 1 ROWS ONLY";
+				final String defaultValueQuery = "SELECT " + sb.toString()
+					+ " FROM SYSIBM.TABLES FETCH FIRST 1 ROWS ONLY";
 				result = jdbcConnection.query(defaultValueQuery);
 				if(result.next())
 				{
 					cc = result.getColumnCount();
 					for(int i = 0; i < cc; i++)
 					{
-						String columnName = result.getMetadata(i).getName();
-						ColumnMetaData column = columnMap.get(columnName);
+						final String columnName = result.getMetadata(i).getName();
+						final ColumnMetaData column = columnMap.get(columnName);
 						if(column != null)
 						{
 							if(column.isAutoIncrement())
@@ -285,7 +260,7 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 							else
 							{
 								Object defaultValue = result.getObject(i);
-								defaultValue = checkDefaultValue(defaultValue,column);
+								defaultValue = this.checkDefaultValue(defaultValue, column);
 								column.setDefaultValue(defaultValue);
 							}
 						}
@@ -293,18 +268,18 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 				}
 				result.close();
 			}
-			catch(DBException e)
+			catch(final DBException e)
 			{
 				throw e;
 			}
 		}
 		
-		Map<IndexInfo, Set<String>> indexMap = new Hashtable<>();
+		final Map<IndexInfo, Set<String>> indexMap = new Hashtable<>();
 		int count = UNKNOWN_ROW_COUNT;
 		
 		if(table.getType() == TableType.TABLE)
 		{
-			Set<String> primaryKeyColumns = new HashSet<>();
+			final Set<String> primaryKeyColumns = new HashSet<>();
 			rs = meta.getPrimaryKeys(catalog,schema,tableName);
 			while(rs.next())
 			{
@@ -323,12 +298,12 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 				rs = meta.getIndexInfo(catalog,schema,tableName,false,true);
 				while(rs.next())
 				{
-					String indexName = rs.getString("INDEX_NAME");
-					String columnName = rs.getString("COLUMN_NAME");
+					final String indexName = rs.getString("INDEX_NAME");
+					final String columnName = rs.getString("COLUMN_NAME");
 					if(indexName != null && columnName != null
-							&& !primaryKeyColumns.contains(columnName))
+						&& !primaryKeyColumns.contains(columnName))
 					{
-						boolean unique = !rs.getBoolean("NON_UNIQUE");
+						final boolean unique = !rs.getBoolean("NON_UNIQUE");
 						
 						IndexInfo info = null;
 						// If the table is a dds table and a unique index then
@@ -376,31 +351,31 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 					}
 					result.close();
 				}
-				catch(DBException e)
+				catch(final DBException e)
 				{
 					throw e;
 				}
 			}
 		}
 		
-		Index[] indices = new Index[indexMap.size()];
+		final Index[] indices = new Index[indexMap.size()];
 		fillIndices(indexMap, indices);
 		
-		TableMetaData tableMeta = new TableMetaData(table,columns,indices,count);
+		final TableMetaData tableMeta = new TableMetaData(table, columns, indices, count);
 		cutStartingAndEndingBackslashFromColumn(tableMeta);
 		
 		return tableMeta;
 	}
 	
 	private static void buildContentOfStringBuilder(
-		Map<String, Object> defaultValues,
-		Map<String, ColumnMetaData> columnMap,
-		StringBuilder sb)
+		final Map<String, Object> defaultValues,
+		final Map<String, ColumnMetaData> columnMap,
+		final StringBuilder sb)
 	{
-		for(String columnName : defaultValues.keySet())
+		for(final String columnName : defaultValues.keySet())
 		{
-			Object defaultValue = defaultValues.get(columnName);
-			ColumnMetaData column = columnMap.get(columnName);
+			final Object defaultValue = defaultValues.get(columnName);
+			final ColumnMetaData column = columnMap.get(columnName);
 			if(column.isAutoIncrement())
 			{
 				continue;
@@ -430,25 +405,25 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 	}
 	
 	private void initColumns(
-		String tableName,
-		Map<String, Object> defaultValues,
-		Map<String, Boolean> autoIncrements,
-		Map<String, ColumnMetaData> columnMap,
-		Result result,
-		int cc,
-		ColumnMetaData[] columns) throws DBException
+		final String tableName,
+		final Map<String, Object> defaultValues,
+		final Map<String, Boolean> autoIncrements,
+		final Map<String, ColumnMetaData> columnMap,
+		final Result result,
+		final int cc,
+		final ColumnMetaData[] columns) throws DBException
 	{
 		for(int i = 0; i < cc; i++)
 		{
-			ColumnMetaData column = result.getMetadata(i);
-			String name = column.getName();
+			final ColumnMetaData column = result.getMetadata(i);
+			final String name = column.getName();
 			
 			Object defaultValue = column.getDefaultValue();
 			if(defaultValue == null && defaultValues.containsKey(name))
 			{
 				defaultValue = defaultValues.get(name);
 			}
-			defaultValue = checkDefaultValue(defaultValue,column);
+			defaultValue = this.checkDefaultValue(defaultValue, column);
 			
 			Boolean autoIncrement = autoIncrements.get(name);
 			if(autoIncrement == null)
@@ -464,56 +439,59 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 		result.close();
 	}
 	
-	private static void fillDefaultValuesAndAutoIncrements(Map<String, Object> defaultValues, Map<String, Boolean> autoIncrements, ResultSet rs)
+	private static void fillDefaultValuesAndAutoIncrements(
+		final Map<String, Object> defaultValues,
+		final Map<String, Boolean> autoIncrements,
+		final ResultSet rs)
 		throws SQLException
 	{
 		while(rs.next())
 		{
-			String columnName = rs.getString("COLUMN_NAME");
-			Object defaultValue = rs.getObject("COLUMN_DEF");
+			final String columnName = rs.getString("COLUMN_NAME");
+			final Object defaultValue = rs.getObject("COLUMN_DEF");
 			String autoIncrement = "";
 			try
 			{
 				autoIncrement = rs.getString("IS_AUTOINCREMENT");
 			}
-			catch(SQLException ignored)
+			catch(final SQLException ignored)
 			{
 			}
-			defaultValues.put(columnName,defaultValue);
-			autoIncrements.put(columnName,"YES".equalsIgnoreCase(autoIncrement));
+			defaultValues.put(columnName, defaultValue);
+			autoIncrements.put(columnName, "YES".equalsIgnoreCase(autoIncrement));
 		}
 		rs.close();
 	}
 	
-	private static void fillIndices(Map<IndexInfo, Set<String>> indexMap, Index[] indices)
+	private static void fillIndices(final Map<IndexInfo, Set<String>> indexMap, final Index[] indices)
 	{
 		int i = 0;
-		for(IndexInfo indexInfo : indexMap.keySet())
+		for(final IndexInfo indexInfo : indexMap.keySet())
 		{
-			Set<String> columnList = indexMap.get(indexInfo);
-			String[] indexColumns = columnList.toArray(new String[columnList.size()]);
-			indices[i++] = new Index(indexInfo.name,indexInfo.type,indexColumns);
+			final Set<String> columnList = indexMap.get(indexInfo);
+			final String[] indexColumns = columnList.toArray(new String[columnList.size()]);
+			indices[i++] = new Index(indexInfo.name, indexInfo.type, indexColumns);
 		}
 	}
 	
 	/**
-	 * Iterates over given default values of the columns.
-	 * Finally, removes the \ on the beginning and ending of the value if there are some.
+	 * Iterates over given default values of the columns. Finally, removes the \ on the beginning and ending of the
+	 * value if there are some.
 	 */
-	private static void cutStartingAndEndingBackslashFromColumn(TableMetaData tableMeta)
+	private static void cutStartingAndEndingBackslashFromColumn(final TableMetaData tableMeta)
 	{
-		for(ColumnMetaData column : tableMeta.getColumns())
+		for(final ColumnMetaData column : tableMeta.getColumns())
 		{
-			Object def = column.getDefaultValue();
+			final Object def = column.getDefaultValue();
 			if(def instanceof String)
 			{
-				String str = (String)def;
-				int length = str.length();
+				final String str = (String)def;
+				final int length = str.length();
 				if(length >= 2)
 				{
 					if(str.charAt(0) == '\'' && str.charAt(length - 1) == '\'')
 					{
-						column.setDefaultValue(str.substring(1,length - 1));
+						column.setDefaultValue(str.substring(1, length - 1));
 					}
 				}
 			}
@@ -521,23 +499,23 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 	}
 	
 	@Override
-	public StoredProcedure[] getStoredProcedures(ProgressMonitor monitor) throws DBException
+	public StoredProcedure[] getStoredProcedures(final ProgressMonitor monitor) throws DBException
 	{
-		monitor.beginTask("",ProgressMonitor.UNKNOWN);
+		monitor.beginTask("", ProgressMonitor.UNKNOWN);
 		
-		List<StoredProcedure> list = new ArrayList<>();
+		final List<StoredProcedure> list = new ArrayList<>();
 		
 		try
 		{
-			ConnectionProvider connectionProvider = dataSource.getConnectionProvider();
+			final ConnectionProvider connectionProvider = this.dataSource.getConnectionProvider();
 			
-			try(Connection connection = connectionProvider.getConnection())
+			try(final Connection connection = connectionProvider.getConnection())
 			{
-				DatabaseMetaData meta = connection.getMetaData();
-				String catalog = getCatalog(dataSource);
-				String schema = getSchema(dataSource);
+				final DatabaseMetaData meta = connection.getMetaData();
+				final String catalog = this.getCatalog(this.dataSource);
+				final String schema = this.getSchema(this.dataSource);
 				
-				ResultSet rs = meta.getProcedures(catalog, schema, null);
+				final ResultSet rs = meta.getProcedures(catalog, schema, null);
 				while(rs.next() && !monitor.isCanceled())
 				{
 					// skip system procedures
@@ -546,18 +524,18 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 						continue;
 					}
 					
-					String name = rs.getString("PROCEDURE_NAME");
-					String description = rs.getString("REMARKS");
+					final String name = rs.getString("PROCEDURE_NAME");
+					final String description = rs.getString("REMARKS");
 					
 					DataType returnType = null;
 					StoredProcedure.ReturnTypeFlavor returnTypeFlavor = getReturnTypeFlavor(rs);
 					
-					List<StoredProcedure.Param> params = new ArrayList<>();
-					ResultSet rsp = meta.getProcedureColumns(catalog, schema, name, null);
+					final List<StoredProcedure.Param> params = new ArrayList<>();
+					final ResultSet rsp = meta.getProcedureColumns(catalog, schema, name, null);
 					while(rsp.next())
 					{
-						DataType dataType = DataType.get(rsp.getInt("DATA_TYPE"));
-						String columnName = rsp.getString("COLUMN_NAME");
+						final DataType dataType = DataType.get(rsp.getInt("DATA_TYPE"));
+						final String columnName = rsp.getString("COLUMN_NAME");
 						switch(rsp.getInt("COLUMN_TYPE"))
 						{
 							case DatabaseMetaData.procedureColumnReturn:
@@ -598,9 +576,9 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 				rs.close();
 			}
 		}
-		catch(SQLException e)
+		catch(final SQLException e)
 		{
-			throw new DBException(dataSource,e);
+			throw new DBException(this.dataSource,e);
 		}
 		
 		monitor.done();
@@ -608,10 +586,10 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 		return list.toArray(new StoredProcedure[list.size()]);
 	}
 	
-	private static StoredProcedure.ReturnTypeFlavor getReturnTypeFlavor(ResultSet rs) throws SQLException
+	private static StoredProcedure.ReturnTypeFlavor getReturnTypeFlavor(final ResultSet rs) throws SQLException
 	{
-		StoredProcedure.ReturnTypeFlavor returnTypeFlavor;
-		int procedureType = rs.getInt("PROCEDURE_TYPE");
+		final StoredProcedure.ReturnTypeFlavor returnTypeFlavor;
+		final int procedureType = rs.getInt("PROCEDURE_TYPE");
 		if(procedureType == DatabaseMetaData.procedureNoResult)
 		{
 			returnTypeFlavor = StoredProcedure.ReturnTypeFlavor.VOID;
@@ -623,59 +601,56 @@ public class DB2iJDBCMetaData extends JDBCMetaData
 		return returnTypeFlavor;
 	}
 	
-	private static boolean isSystemProcedure(ResultSet rs) throws SQLException
+	private static boolean isSystemProcedure(final ResultSet rs) throws SQLException
 	{
-		String procSchem = rs.getString("PROCEDURE_SCHEM");
+		final String procSchem = rs.getString("PROCEDURE_SCHEM");
 		return procSchem != null
 			&& (procSchem.startsWith("SYS") || procSchem.startsWith("SQLJ"));
 	}
 	
 	@Override
-	protected void createTable(JDBCConnection jdbcConnection, TableMetaData table)
-			throws DBException, SQLException
+	protected void createTable(final JDBCConnection jdbcConnection, final TableMetaData table)
+		throws DBException, SQLException
 	{
 	}
 	
-	
 	@Override
-	protected void addColumn(JDBCConnection jdbcConnection, TableMetaData table,
-			ColumnMetaData column, ColumnMetaData columnBefore, ColumnMetaData columnAfter)
-			throws DBException, SQLException
+	protected void addColumn(
+		final JDBCConnection jdbcConnection, final TableMetaData table,
+		final ColumnMetaData column, final ColumnMetaData columnBefore, final ColumnMetaData columnAfter)
+		throws DBException, SQLException
 	{
 	}
 	
-	
 	@Override
-	protected void alterColumn(JDBCConnection jdbcConnection, TableMetaData table,
-			ColumnMetaData column, ColumnMetaData existing) throws DBException, SQLException
+	protected void alterColumn(
+		final JDBCConnection jdbcConnection, final TableMetaData table,
+		final ColumnMetaData column, final ColumnMetaData existing) throws DBException, SQLException
 	{
 	}
 	
-	
 	@Override
-	public boolean equalsType(ColumnMetaData clientColumn, ColumnMetaData dbColumn)
+	public boolean equalsType(final ColumnMetaData clientColumn, final ColumnMetaData dbColumn)
 	{
 		return false;
 	}
 	
-	
 	@Override
-	protected void dropColumn(JDBCConnection jdbcConnection, TableMetaData table,
-			ColumnMetaData column) throws DBException, SQLException
+	protected void dropColumn(
+		final JDBCConnection jdbcConnection, final TableMetaData table,
+		final ColumnMetaData column) throws DBException, SQLException
 	{
 	}
 	
-	
 	@Override
-	protected void createIndex(JDBCConnection jdbcConnection, TableMetaData table, Index index)
-			throws DBException, SQLException
+	protected void createIndex(final JDBCConnection jdbcConnection, final TableMetaData table, final Index index)
+		throws DBException, SQLException
 	{
 	}
 	
-	
 	@Override
-	protected void dropIndex(JDBCConnection jdbcConnection, TableMetaData table, Index index)
-			throws DBException, SQLException
+	protected void dropIndex(final JDBCConnection jdbcConnection, final TableMetaData table, final Index index)
+		throws DBException, SQLException
 	{
 	}
 }

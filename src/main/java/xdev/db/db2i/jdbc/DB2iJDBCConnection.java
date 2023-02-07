@@ -17,40 +17,17 @@
  */
 package xdev.db.db2i.jdbc;
 
-/*-
- * #%L
- * DB2i
- * %%
- * Copyright (C) 2003 - 2023 XDEV Software
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- */
-
-
-import xdev.db.DBException;
-import xdev.db.jdbc.JDBCConnection;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
+
+import xdev.db.DBException;
+import xdev.db.jdbc.JDBCConnection;
 public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iDbms>
 {
-	public DB2iJDBCConnection(DB2iJDBCDataSource dataSource)
+	public DB2iJDBCConnection(final DB2iJDBCDataSource dataSource)
 	{
 		super(dataSource);
 	}
@@ -59,40 +36,39 @@ public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iD
 	@Override
 	protected Connection establishConnection() throws DBException
 	{
-		Connection con = super.establishConnection();
+		final Connection con = super.establishConnection();
 		
 		try
 		{
-			String schema = dataSource.getSchema();
-			if(schema != null && schema.length() > 0 && !schema.equals(dataSource.getUserName()))
+			final String schema = this.dataSource.getSchema();
+			if(schema != null && schema.length() > 0 && !schema.equals(this.dataSource.getUserName()))
 			{
 				con.createStatement().execute("SET SCHEMA " + schema); //$NON-NLS-1$
 			}
 		}
-		catch(SQLException e)
+		catch(final SQLException e)
 		{
-			throw new DBException(dataSource,e);
+			throw new DBException(this.dataSource, e);
 		}
 		
 		return con;
 	}
 	
-	
 	@Override
-	public int getQueryRowCount(String select) throws DBException
+	public int getQueryRowCount(final String select) throws DBException
 	{
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(*) FROM ("); //$NON-NLS-1$
 		sb.append(select);
 		sb.append(")"); //$NON-NLS-1$
 		
 		try
 		{
-			ResultSet result = queryJDBC(sb.toString());
+			final ResultSet result = this.queryJDBC(sb.toString());
 			try
 			{
 				result.next();
-				int rowCount = result.getInt(1);
+				final int rowCount = result.getInt(1);
 				return rowCount;
 			}
 			finally
@@ -100,30 +76,30 @@ public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iD
 				result.close();
 			}
 		}
-		catch(DBException e)
+		catch(final DBException e)
 		{
 			throw e;
 		}
-		catch(Exception e)
+		catch(final Exception e)
 		{
-			throw new DBException(dataSource,e);
+			throw new DBException(this.dataSource, e);
 		}
 	}
 	
-	
 	@Override
-	public void createTable(String tableName, String primaryKey, Map<String, String> columnMap,
-			boolean isAutoIncrement, Map<String, String> foreignKeys) throws Exception
+	public void createTable(
+		final String tableName, final String primaryKey, final Map<String, String> columnMap,
+		final boolean isAutoIncrement, final Map<String, String> foreignKeys) throws Exception
 	{
-		Connection connection = super.getConnection();
-		Statement statement = connection.createStatement();
+		final Connection connection = super.getConnection();
+		final Statement statement = connection.createStatement();
 		try
 		{
-			if(!checkIfTableExists(connection.createStatement(),tableName))
+			if(!this.checkIfTableExists(connection.createStatement(), tableName))
 			{
 				if(!columnMap.containsKey(primaryKey))
 				{
-					columnMap.put(primaryKey,"INTEGER"); //$NON-NLS-1$
+					columnMap.put(primaryKey, "INTEGER"); //$NON-NLS-1$
 				}
 				StringBuffer createStatement = null;
 				
@@ -142,14 +118,14 @@ public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iD
 				}
 				
 				int i = 0;
-				for(String keySet : columnMap.keySet())
+				for(final String keySet : columnMap.keySet())
 				{
 					if(!keySet.equals(primaryKey))
 					{
 						if(i <= columnMap.size())
 						{
-							createStatement.append(keySet + " " + columnMap.get(keySet) + ","); //$NON-NLS-1$ //$NON-NLS-2$
-							
+							createStatement.append(
+								keySet + " " + columnMap.get(keySet) + ","); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 						else
 						{
@@ -169,7 +145,7 @@ public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iD
 				statement.execute(createStatement.toString());
 			}
 		}
-		catch(Exception e)
+		catch(final Exception e)
 		{
 			throw e;
 		}
@@ -180,11 +156,11 @@ public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iD
 		}
 	}
 	
-	
-	private boolean checkIfTableExists(Statement statement, String tableName) throws Exception
+	private boolean checkIfTableExists(final Statement statement, final String tableName) throws Exception
 	{
 		
-		String sql = "SELECT NAME FROM SYSIBM.SYSTABLES WHERE NAME='" + tableName + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+		final String sql =
+			"SELECT NAME FROM SYSIBM.SYSTABLES WHERE NAME='" + tableName + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 		
 		ResultSet resultSet = null;
 		try
@@ -192,7 +168,7 @@ public class DB2iJDBCConnection extends JDBCConnection<DB2iJDBCDataSource, DB2iD
 			statement.execute(sql);
 			resultSet = statement.getResultSet();
 		}
-		catch(Exception e)
+		catch(final Exception e)
 		{
 			if(resultSet != null)
 			{
