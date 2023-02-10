@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -10,13 +10,13 @@
     <packaging>jar</packaging>
 
     <name>SqlEngine Database Adapter DB2i</name>
-	<description>XAPI SqlEngine Database Adapter for DB2i</description>
-	<url>https://github.com/xdev-software/xapi-db-db2i</url>
+    <description>XAPI SqlEngine Database Adapter for DB2i</description>
+    <url>https://github.com/xdev-software/xapi-db-db2i</url>
 
     <scm>
-		<url>https://github.com/xdev-software/xapi-db-db2i</url>
-		<connection>https://github.com/xdev-software/xapi-db-db2i.git</connection>
-	</scm>
+        <url>https://github.com/xdev-software/xapi-db-db2i</url>
+        <connection>https://github.com/xdev-software/xapi-db-db2i.git</connection>
+    </scm>
 
     <inceptionYear>2003</inceptionYear>
 
