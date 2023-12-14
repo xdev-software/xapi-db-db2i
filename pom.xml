@@ -53,7 +53,7 @@
         <!-- We call it db2i here but it's actually jt400
          For more information: https://www.ibm.com/support/pages/jtopen-jdbc-driver-%E2%80%93-alternate-server-support
          -->
-        <db2i.version>11.1</db2i.version>
+        <db2i.version>20.0.6</db2i.version>
     </properties>
 
     <repositories>
